@@ -41,8 +41,8 @@ generate *secure links* that, when interpreted by the back-end, have three
 features:
 
 1. provide a mapping between the file name and the hash name for the archive item
-2. provide a content type of archive item
-3. provide non-repudiation of the above two
+2. provide a content type for the archive item
+3. provide non-repudiation for the above two
 
 For example:
 - the user searches for a specific file (blah-1.2.tar.gz, say) via the front-end
@@ -53,7 +53,7 @@ For example:
   - `[src]` = the source path uri path
   - `[hmac]` = an md5 hmac where
     - `[key]` = a shared secret known to both the front-end and back-end
-    - `[msg]` = the concatenation of `[hash]`, `[type]` and `[file]` separeted by forward slash
+    - `[msg]` = the concatenation of `[hash]`, `[type]` and `[file]` separated by forward slash
   - `[hash]` = the hash name of the archive item
   - `[type]` = the content type of the archive item (base16 encoded)
   - `[file]` = the file name of the archive item
@@ -78,7 +78,7 @@ For example:
   - `hmac_md5([key], [hash] + '/' + [type] + '/' + [file])`
   - e54b536a0d3f695112bb5790bd741206
 - and the redirection URL is:
-  - `http://[host][base]/[hmac]/[hash]/[type]/[file]`
+  - `http://[host][src]/[hmac]/[hash]/[type]/[file]`
   - https://www.example.org/foo/e54b536a0d3f695112bb5790bd741206/2816d3b56ebeaabd4af3a31d9b1c17f545a8898a/6170706c69636174696f6e2f782d677a6970/blah-1.2.tar.gz
 
 [1]: http://nginx.org/
