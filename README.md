@@ -60,9 +60,9 @@ For example:
   - sets the content type to `[type]` (decoded), and
   - rewrites the request uri to `/[tgt]/[dir1]/[dir2]/[hash]` where
     - `[tgt]` = the target uri path
-    - `[dir1]` = first two hex digits of [hash]
-    - `[dir2]` = next two hex digits of [hash]
-- the user's browser will either display (inline) or offer to save (attachment) the file
+    - `[dir1]` = first two hex digits of `[hash]`
+    - `[dir2]` = next two hex digits of `[hash]`
+- the user's browser will either display (inline) or offer to save (attachment) the file depending on the content type
 
 ### The Example
 
@@ -80,8 +80,8 @@ For example:
   - `http://[host][base]/[hmac]/[hash]/[type]/[file]`
   - https://www.example.org/foo/e54b536a0d3f695112bb5790bd741206/2816d3b56ebeaabd4af3a31d9b1c17f545a8898a/6170706c69636174696f6e2f782d677a6970/blah-1.2.tar.gz
 
-[1] http://nginx.org/
-[2] http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
-[3] http://www.lighttpd.net/
-[4] http://redmine.lighttpd.net/projects/1/wiki/Docs_ModSecDownload
+[1]: http://nginx.org/
+[2]: http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
+[3]: http://www.lighttpd.net/
+[4]: http://redmine.lighttpd.net/projects/1/wiki/Docs_ModSecDownload
 
