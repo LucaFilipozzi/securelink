@@ -15,13 +15,13 @@ hash name)
 The front-end provides the mapping between the archive item's front-end file
 name and the back-end hash name.
 
-### The Problem
+### The Opportunity
 
 Debian's snapshot service currently provides access to 25TB of archive items,
 growing at 5TB/yr.
 
 Debian is actively seeking partners to host the archive items since Debian's
-current storage solutions reaching capacity.
+current storage environments reaching capacity.
 
 This necessitates an examination of the service from the perspective of
 splitting the front-end from the back-end such that partners willing to provide
@@ -33,11 +33,12 @@ back-end be both user-friendly (users access archive items by file name rather
 than hash name) and secure (users can trust the mapping between the file name
 and the hash name).
 
-### The Solution
+### The Proposal
 
-Leveraging concepts [nginx's][1] [secure_link][2] and [lighttpd's][3]
-[mod_secdownload][4], the solution is to configure the front-end to generate
-*secure links* that, when interpreted by the back-end, have three features:
+Borrowing concepts from [nginx's][1] [secure_link][2] and [lighttpd's][3]
+[mod_secdownload][4], the proposal is to configure the front-end to
+generate *secure links* that, when interpreted by the back-end, have three
+features:
 
 1. provide a mapping between the file name and the hash name for the archive item
 2. provide a content type of archive item
