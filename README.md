@@ -50,7 +50,7 @@ For example:
 - the user requests to download the linked-to file from the front-end
 - the front-end responds with 302, redirecting the user to `http://[host][src]/[hmac]/[hash]/[type]/[file]` where
   - `[host]` = the hostname of the back-end
-  - `[src]` = the source path uri path
+  - `[src]` = the source uri path
   - `[hmac]` = an md5 hmac where
     - `[key]` = a shared secret known to both the front-end and back-end
     - `[msg]` = the concatenation of `[hash]`, `[type]` and `[file]` separated by forward slash
@@ -70,6 +70,7 @@ For example:
 - suppose that the back-end parameters are:
   - `[host]` = www.example.org
   - `[src]` = /foo
+  - `[tgt]` = /foo
   - `[hash]` = 2816d3b56ebeaabd4af3a31d9b1c17f545a8898a
   - `[type]` = 6170706c69636174696f6e2f782d677a6970 which is application/x-gzip base16-encoded
   - `[file]` = blah-1.2.tar.gz
@@ -77,9 +78,13 @@ For example:
 - then `[hmac]` is computed as:
   - `hmac_md5([key], [hash] + '/' + [type] + '/' + [file])`
   - e54b536a0d3f695112bb5790bd741206
-- and the redirection URL is:
+- the redirection URL is:
   - `http://[host][src]/[hmac]/[hash]/[type]/[file]`
-  - https://www.example.org/foo/e54b536a0d3f695112bb5790bd741206/2816d3b56ebeaabd4af3a31d9b1c17f545a8898a/6170706c69636174696f6e2f782d677a6970/blah-1.2.tar.gz
+  - `https://www.example.org/foo/e54b536a0d3f695112bb5790bd741206/2816d3b56ebeaabd4af3a31d9b1c17f545a8898a/6170706c69636174696f6e2f782d677a6970/blah-1.2.tar.gz`
+- the rewritten URL is:
+  - `https://www.example.org/bar/28/16/2816d3b56ebeaabd4af3a31d9b1c17f545a8898a` [Content-Type: application/x-gzip]
+- and the client will save the content as:
+  - blah-1.2.tar.gz
 
 [1]: http://nginx.org/
 [2]: http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
