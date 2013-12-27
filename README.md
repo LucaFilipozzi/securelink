@@ -42,49 +42,90 @@ features:
 
 1. provide a mapping between the file name and the hash name for the archive item
 2. provide a content type for the archive item
-3. provide non-repudiation for the above two
+3. provide non-repudiation via hashed message authentication code
 
-For example:
+Specifically, the mode of operation is:
+ 
 - the user searches for a specific file (blah-1.2.tar.gz, say) via the front-end
 - the front-end provides a link to the desired file
 - the user requests to download the linked-to file from the front-end
 - the front-end responds with 302, redirecting the user to `http://[host][src]/[hmac]/[hash]/[type]/[file]` where
-  - `[host]` = the hostname of the back-end
-  - `[src]` = the source uri path
-  - `[hmac]` = an md5 hmac where
-    - `[key]` = a shared secret known to both the front-end and back-end
-    - `[msg]` = the concatenation of `[hash]`, `[type]` and `[file]` separated by forward slash
-  - `[hash]` = the hash name of the archive item
-  - `[type]` = the content type of the archive item (base16 encoded)
-  - `[file]` = the file name of the archive item
+    - `[host]` = the hostname of the back-end
+    - `[src]` = the source uri path
+    - `[hmac]` = an md5 hmac where
+        - `[key]` = a shared secret known to both the front-end and back-end
+        - `[msg]` = the concatenation of `[hash]`, `[type]` and `[file]` separated by forward slash
+    - `[hash]` = the hash name of the archive item
+    - `[type]` = the content type of the archive item (base16 encoded)
+    - `[file]` = the file name of the archive item
 - the back-end compares the computed hmac with the received hmac and, if equal,
-  - sets the content type to `[type]` (decoded), and
-  - rewrites the request uri to `/[tgt]/[dir1]/[dir2]/[hash]` where
-    - `[tgt]` = the target uri path
-    - `[dir1]` = first two hex digits of `[hash]`
+    - sets the content type to `[type]` (decoded), and
+    - rewrites the request uri to `/[tgt]/[dir1]/[dir2]/[hash]` where
+        - `[tgt]` = the target uri path
+        - `[dir1]` = first two hex digits of `[hash]`
     - `[dir2]` = next two hex digits of `[hash]`
 - the user's browser will either display (inline) or offer to save (attachment) the file depending on the content type
 
-### The Example
+### An Example
 
-- suppose that the back-end parameters are:
-  - `[host]` = www.example.org
-  - `[src]` = /foo
-  - `[tgt]` = /foo
-  - `[hash]` = 2816d3b56ebeaabd4af3a31d9b1c17f545a8898a
-  - `[type]` = 6170706c69636174696f6e2f782d677a6970 which is application/x-gzip base16-encoded
-  - `[file]` = blah-1.2.tar.gz
-  - `[key]` = secret
-- then `[hmac]` is computed as:
-  - `hmac_md5([key], [hash] + '/' + [type] + '/' + [file])`
-  - e54b536a0d3f695112bb5790bd741206
-- the redirection URL is:
-  - `http://[host][src]/[hmac]/[hash]/[type]/[file]`
-  - `https://www.example.org/foo/e54b536a0d3f695112bb5790bd741206/2816d3b56ebeaabd4af3a31d9b1c17f545a8898a/6170706c69636174696f6e2f782d677a6970/blah-1.2.tar.gz`
-- the rewritten URL is:
-  - `https://www.example.org/bar/28/16/2816d3b56ebeaabd4af3a31d9b1c17f545a8898a` [Content-Type: application/x-gzip]
-- and the client will save the content as:
-  - blah-1.2.tar.gz
+Suppose that the parameters are as follows:
+
+```lua
+host = "www.example.org"
+src  = "/foo"
+tgt  = "/bar"
+hash = "2816d3b56ebeaabd4af3a31d9b1c17f545a8898a"
+type = "6170706c69636174696f6e2f782d677a6970" -- "application/x-gzip" base16-encoded
+file = "blah-1.2.tar.gz"
+key  = "secret"
+```
+
+Then the `[hmac]` is computed as:
+
+```lua
+hmac = hmac_md5(key, [hash] .. "/" .. type .. "/" .. file)
+```
+
+yielding:
+
+```lua
+hmac = "e54b536a0d3f695112bb5790bd741206"
+```
+
+The redirection URL is composed as:
+
+```lua
+uri = "https://" .. host .. src .. "/" .. hmac .. "/" .. hash .. "/" .. type .. "/" .. file
+```
+
+yielding:
+
+```lua
+uri = "https://www.example.org/foo/e54b536a0d3f695112bb5790bd741206/2816d3b56ebeaabd4af3a31d9b1c17f545a8898a/6170706c69636174696f6e2f782d677a6970/blah-1.2.tar.gz"
+```
+
+After verifying the `[hmac]`, the web server rewrites the URL to:
+
+```lua
+uri = "https://" .. host .. tgt .. "/" .. dir1 .. "/" .. dir2 .. "/" .. hash
+```
+
+yielding:
+
+```lua
+uri = "https://www.example.org/bar/28/16/2816d3b56ebeaabd4af3a31d9b1c17f545a8898a"
+```
+
+The client saves the content as:
+
+`blah-1.2.tar.gz`
+
+since the response header contains:
+
+```html
+Content-Type: application/x-gzip
+```
+
 
 [1]: http://nginx.org/
 [2]: http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
