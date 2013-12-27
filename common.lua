@@ -53,7 +53,7 @@ end
 
 function snapshot.do_transform(_key, _src, _tgt, _uri)
   if not _key or not _src or not _tgt then
-    log_error("lighttpd incorrectly configured")
+    log_error("web server incorrectly configured")
     return_status(500) -- internal server error
   end
 
