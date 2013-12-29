@@ -1,16 +1,16 @@
 # secure-link
 
-a mechanism for front-end web applications to provide intuitive
-and safe links into remote web-accessible back-end storage
+a mechanism for front-end web applications to provide intuitive and safe links
+into remote web-accessible back-end storage
 
-- [Overview]
-    - [Background]
-    - [Opportunity]
-    - [Proposal]
-    - [Example]
-- [Getting Started]
-    - [Requirements]
-    - [Installation]
+- [Overview](#overview)
+    - [Background](#background)
+    - [Opportunity](#opportunity)
+    - [Proposal](#proposal)
+    - [Example](#example)
+- [Getting Started](#getting-started)
+    - [Requirements](#requirements)
+    - [Installation](#installation)
 
 ## Overview
 
@@ -26,11 +26,15 @@ item in a hashed directory structure.
 
 For example, instead of storing archive items by file name:
 
-```/path/to/blah-1.2.tar.gz```
+```
+/path/to/blah-1.2.tar.gz
+```
 
 the back-end stores them by hash name:
 
-```/path/to/28/16/2816d3b56ebeaabd4af3a31d9b1c17f545a8898a```
+```
+/path/to/28/16/2816d3b56ebeaabd4af3a31d9b1c17f545a8898a
+```
 
 The front-end provides the mapping between the archive item's front-end file
 name and back-end hash name.
@@ -60,21 +64,25 @@ Borrowing concepts from [nginx's][1] [secure_link][2] and [lighttpd's][3]
 generate a **secure link** that, when interpreted by the back-end, have three
 features:
 
-1. **provide a mapping between the file name and the hash name for the archive item**
-2. **provide a content type for the archive item**
-3. **provide non-repudiation of the mapping and content-type**
+1. provide a mapping between the file name and the hash name for the archive
+   item
+2. provide a content type for the archive item
+3. provide non-repudiation of the mapping and content-type
 
 Specifically, the proposed mode of operation is:
  
-- the user searches for a specific file (blah-1.2.tar.gz, say) via the front-end
+- the user searches for a specific file (blah-1.2.tar.gz, say) via the
+  front-end
 - the front-end provides a link to the desired file
 - the user requests to download the linked-to file
-- the front-end responds with 302, redirecting the user to `http://[host][src]/[hmac]/[hash]/[type]/[file]` where
+- the front-end responds with 302, redirecting the user to
+  `http://[host][src]/[hmac]/[hash]/[type]/[file]` where
     - `[host]` is the hostname of the back-end
     - `[src]` is the source URI path
     - `[hmac]` is the MD5 HMAC where
-        - `[key]` is the shared secret known to both the front-end and back-end
-        - `[msg]` is the concatenation of `[hash]`, `[type]` and `[file]` separated by forward slash
+	- `[key]` is the shared secret known to both the front-end and back-end
+	- `[msg]` is the concatenation of `[hash]`, `[type]` and `[file]`
+	  separated by forward slash
     - `[hash]` is the hash name of the archive item
     - `[type]` is the content type of the archive item (base16 encoded)
     - `[file]` is the file name of the archive item
@@ -84,9 +92,13 @@ Specifically, the proposed mode of operation is:
         - `[tgt]` is the target URI path
         - `[dir1]` is first two hex digits of `[hash]`
         - `[dir2]` is next two hex digits of `[hash]`
-- the user's browser will either display (inline) or offer to save (attachment) the file depending on the content type
+- the user's browser will either display (inline) or offer to save (attachment)
+  the file depending on the content type
 
-The purpose of the `[src]` to `[tgt]` rewriting is to allow the back-end operator to specify **secure link** rewriting for request URIs in the `[src]` namespace while simultaneously serving the hash files from the `[tgt]` namespace.
+The purpose of the `[src]` to `[tgt]` rewriting is to allow the back-end
+operator to specify **secure link** rewriting for request URIs in the `[src]`
+namespace while simultaneously serving the hash files from the `[tgt]`
+namespace.
 
 ### Example
 
@@ -142,7 +154,8 @@ The client saves the content as:
 
 `blah-1.2.tar.gz`
 
-since the original request to the front-end ended in `blah-1.2.tar.gz` and because the response header contains:
+since the original request to the front-end ended in `blah-1.2.tar.gz` and
+because the response header contains:
 
 ```html
 Content-Type: application/x-gzip
@@ -153,7 +166,10 @@ Content-Type: application/x-gzip
 
 ### Requirements
 
-The back-end **secure link** capability is provided via a lua script.  Consequently, the web-server deployed on the back-end must support URI rewriting via call-out to an external script.  This is true of nginx, lighttpd and apache2 in Debian [wheezy][5].
+The back-end **secure link** capability is provided via a lua script.
+Consequently, the web-server deployed on the back-end must support URI
+rewriting via call-out to an external script.  This is true of nginx, lighttpd
+and apache2 in Debian [wheezy][5].
 
 #### nginx
 
@@ -175,7 +191,8 @@ apt-get install apache2 lua5.1 lua-md5
 
 ### Installation
 
-Copy the web server-specific script and the shared script to the web server's configuration directory.
+Copy the web server-specific script and the shared script to the web server's
+configuration directory.
 
 #### nginx
 
@@ -202,7 +219,9 @@ wget -P /etc/apache2 https://raw.github.com/LucaFilipozzi/secure-link/master/apa
 
 #### nginx
 
-The configuration for nginx on the back-end is trivial, primarily due to nginx's excellent use of lua as an well-integrated mechanism for extending functionality.
+The configuration for nginx on the back-end is trivial, primarily due to
+nginx's excellent use of lua as an well-integrated mechanism for extending
+functionality.
 
 ```
 location /foo/ {
@@ -215,7 +234,9 @@ location /foo/ {
 
 #### lighttpd
 
-The configuration for lighttpd on the back-end is also trivial but leverages [mod_magnet][6].  Thus, it is important that the lua script never blocks and returns quickly.
+The configuration for lighttpd on the back-end is also trivial but leverages
+[mod_magnet][6].  Thus, it is important that the lua script never blocks and
+returns quickly.
 
 ```
 server.modules = {
@@ -232,7 +253,12 @@ $HTTP["url"] =~ "^/foo/" {
 
 #### apache2
 
-The configuration for apache2 is more complex as it leverages [mod_rewrite][7]'s [RewriteMap][8] which passes context into scripts via STDIN and expects responses via STDOUT.  Thus, the input parameters (`[key]`, `[src]`, `[tgt]` and `[uri]`) are concatenated into a single input string and the output string is parsed for two output parameters (`[uri]`, now rewritten, and `[type]`).
+The configuration for apache2 is more complex as it leverages
+[mod_rewrite][7]'s [RewriteMap][8] which passes context into scripts via STDIN
+and expects responses via STDOUT.  Thus, the input parameters (`[key]`,
+`[src]`, `[tgt]` and `[uri]`) are concatenated into a single input string and
+the output string is parsed for two output parameters (`[uri]`, now rewritten,
+and `[type]`).
 
 ```
 RewriteLock /var/run/apache2/rewrite.lock
