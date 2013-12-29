@@ -1,6 +1,6 @@
 # secure-link
 
-secure-link is mechanism for front-end web applications to provide intuitive
+a mechanism for front-end web applications to provide intuitive
 and safe links into remote web-accessible back-end storage
 
 - [Overview]
