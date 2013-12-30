@@ -18,7 +18,7 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local snapshot = {}
+local export = {}
 
 local md5 = require("md5")
 
@@ -51,7 +51,7 @@ function base16_decode(_str)
   end))
 end
 
-function snapshot.do_transform(_key, _src, _tgt, _uri)
+function export.rewrite_uri(_key, _src, _tgt, _uri)
   if not _key or not _src or not _tgt then
     log_error("web server incorrectly configured")
     return_status(500) -- internal server error
@@ -82,9 +82,9 @@ function snapshot.do_transform(_key, _src, _tgt, _uri)
   -- update content-type (EXTension)
   local _ext = base16_decode(_type)
 
-  return _uri, _ext
+  return _uri, _ext -- return both the rewritten uri and the content-type
 end
 
-return snapshot
+return export
 
 -- vim: set ts=2 sw=2 et ai si fdm=indent:

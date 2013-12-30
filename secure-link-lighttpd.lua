@@ -18,9 +18,9 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local common = require("common")
+local common = require("secure-link-common")
 
-function do_extract()
+function get_uri()
   local _key = lighty.req_env["key"]  -- set in lighttpd configuration (eg: "secret")
   local _src = lighty.req_env["src"]  -- set in lighttpd configuration (eg: "/foo")
   local _tgt = lighty.req_env["tgt"]  -- set in lighttpd configuration (eg: "/bar")
@@ -36,12 +36,12 @@ function log_error(_error)
   print(_error)
 end
 
-function do_load(_uri, _ext)
+function set_uri(_uri, _ext)
   lighty.env["uri.path"] = _uri
   lighty.header["Content-Type"] = _ext
 end
 
--- extract -> transform -> load
-do_load(common.do_transform(do_extract()))
+-- get_uri() -> rewrite_uri() -> set_uri()
+set_uri(common.rewrite_uri(get_uri()))
 
 -- vim: set ts=2 sw=2 et ai si fdm=indent:

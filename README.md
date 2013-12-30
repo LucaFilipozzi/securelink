@@ -197,22 +197,22 @@ configuration directory.
 #### nginx
 
 ```
-wget -P /etc/nginx https://raw.github.com/LucaFilipozzi/secure-link/master/common.lua
-wget -P /etc/nginx https://raw.github.com/LucaFilipozzi/secure-link/master/nginx.lua
+wget -P /etc/nginx https://raw.github.com/LucaFilipozzi/secure-link/master/secure-link-common.lua
+wget -P /etc/nginx https://raw.github.com/LucaFilipozzi/secure-link/master/secure-link-nginx.lua
 ```
 
 #### lighttpd
 
 ```
-wget -P /etc/lighttpd https://raw.github.com/LucaFilipozzi/secure-link/master/common.lua
-wget -P /etc/lighttpd https://raw.github.com/LucaFilipozzi/secure-link/master/lighttpd.lua
+wget -P /etc/lighttpd https://raw.github.com/LucaFilipozzi/secure-link/master/secure-link-common.lua
+wget -P /etc/lighttpd https://raw.github.com/LucaFilipozzi/secure-link/master/secure-link-lighttpd.lua
 ```
 
 #### apache2
 
 ```
-wget -P /etc/apache2 https://raw.github.com/LucaFilipozzi/secure-link/master/common.lua
-wget -P /etc/apache2 https://raw.github.com/LucaFilipozzi/secure-link/master/apache.lua
+wget -P /etc/apache2 https://raw.github.com/LucaFilipozzi/secure-link/master/secure-link-common.lua
+wget -P /etc/apache2 https://raw.github.com/LucaFilipozzi/secure-link/master/secure-link-apache2.lua
 ```
 
 ### Configuration
@@ -228,7 +228,7 @@ location /foo/ {
   set $key "secret";
   set $src "/foo";
   set $tgt "/bar";
-  rewrite_by_lua_file nginx.lua;
+  rewrite_by_lua_file secure-link-nginx.lua;
 }
 ```
 
@@ -247,7 +247,7 @@ server.modules = {
 
 $HTTP["url"] =~ "^/foo/" {
   setenv.add-environment = ("key" => "secret", "src" => "/foo", "tgt" => "/bar")
-  magnet.attract-physical-path-to = ("/etc/lighttpd/lighttpd.lua")
+  magnet.attract-physical-path-to = ("/etc/lighttpd/secure-link-lighttpd.lua")
 }
 ```
 
@@ -266,7 +266,7 @@ RewriteLock /var/run/apache2/rewrite.lock
 <VirtualHost ...>
   ...
   RewriteEngine On
-  RewriteMap securelink prg:/etc/apache2/apache.lua
+  RewriteMap securelink prg:/etc/apache2/secure-link-apache2.lua
   RewriteRule ^(/foo/.+) ${securelink:secret+/foo+/bar+%{REQUEST_URI}} [C,DPI]
   RewriteRule ^(/bar/[^+]+)+(.+) $1 [L,T=$2]
   ...
