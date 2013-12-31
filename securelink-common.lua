@@ -18,11 +18,11 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local export = {}
+local securelink = {}
 
 local md5 = require("md5")
 
-function hmac_md5(_key, _msg)
+local function hmac_md5(_key, _msg)
   if type(_key) ~= "string" or type(_msg) ~= "string" then
     return nil
   end
@@ -45,33 +45,33 @@ function hmac_md5(_key, _msg)
   return md5.sumhexa(_opad .. md5.sum(_ipad .. _msg))
 end
 
-function base16_decode(_str)
+local function base16_decode(_str)
   return (_str:gsub('..', function(_cc)
     return string.char(tonumber(_cc, 16))
   end))
 end
 
-function export.rewrite_uri(_key, _src, _tgt, _uri)
+local function rewrite_uri(_key, _src, _tgt, _uri)
   if not _key or not _src or not _tgt then
-    log_error("web server incorrectly configured")
-    return_status(500) -- internal server error
+    securelink.log_error("web server incorrectly configured")
+    securelink.return_status(500) -- internal server error
   end
 
   local _hmac, _msg = string.match(_uri, "^" .. _src .. "/(%x+)/(.*)$")
   if not _hmac or not _msg then
-    log_error("hmac and message not found in uri")
-    return_status(400) -- bad request
+    securelink.log_error("hmac and message not found in uri")
+    securelink.return_status(400) -- bad request
   end
 
   if hmac_md5(_key, _msg) ~= string.lower(_hmac) then
-    log_error("computed hmac does not match the received hmac")
-    return_status(401) -- unauthorized
+    securelink.log_error("computed hmac does not match the received hmac")
+    securelink.return_status(401) -- unauthorized
   end
 
   local _hash, _type, _file = string.match(_msg, "^(%x+)/(%x+)/([^/]+)$")
   if not _hash or not _type or not _file then
-    log_error("message does contain necessary components")
-    return_status(403) -- forbidden
+    securelink.log_error("message does contain necessary components")
+    securelink.return_status(403) -- forbidden
   end
 
   local _dir1, _dir2 = string.match(_hash, "^(%x%x)(%x%x)%x+$")
@@ -85,6 +85,7 @@ function export.rewrite_uri(_key, _src, _tgt, _uri)
   return _uri, _ext -- return both the rewritten uri and the content-type
 end
 
-return export
+securelink.rewrite_uri = rewrite_uri
+return securelink
 
 -- vim: set ts=2 sw=2 et ai si fdm=indent:

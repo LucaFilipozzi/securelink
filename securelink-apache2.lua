@@ -1,3 +1,4 @@
+#!/usr/bin/env lua
 -- Copyright (C) 2013 Luca Filipozzi <luca.filipozzi@gmail.com>
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -18,30 +19,39 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local common = require("secure-link-common")
+package.path = "/etc/apache2/?.lua;" .. package.path
 
-function get_uri()
-  local _key = ngx.var.key  -- set in nginx configuration (eg: "secret")
-  local _src = ngx.var.src  -- set in nginx configuration (eg: "/foo")
-  local _tgt = ngx.var.tgt  -- set in nginx configuration (eg: "/bar")
-  local _uri = ngx.var.uri  -- set by nginx automatically
+local securelink = require("securelink-common")
+
+local function get_uri(_str)
+  -- pass in four parameters, delineated by '+' since RewriteMap
+  -- provides no means to pass parameters via the environment
+  local _key, _src, _tgt, _uri = string.match(_str, "^([^+]+)+([^+]+)+([^+]+)+(.+)$")
   return _key, _src, _tgt, _uri
 end
 
-function return_status(_status)
-  ngx.exit(_status)
+local function set_uri(_uri, _ext)
+  io.write(_uri .. "+" .. _ext)
 end
 
-function log_error(_error)
-  ngx.log(ngx.ERR, _error)
+local function return_status(_status)
+  error()
 end
 
-function set_uri(_uri, _ext)
-  ngx.req.set_uri(_uri)
-  ngx.header["Content-Type"] = _ext
+local function log_error(_error)
+  -- intentionally empty .. mechanism not available in apache via RewriteMap
 end
 
--- get_uri() -> rewrite_uri() -> set_uri()
-set_uri(common.rewrite_uri(get_uri()))
+securelink.return_status = return_status
+securelink.log_error = log_error
+
+-- do forever: get_uri() -> rewrite_uri() -> set_uri()
+while true do
+  if not pcall(function () set_uri(securelink.rewrite_uri(get_uri(io.read()))) end) then
+    io.write("NULL")
+  end
+  io.write("\n")
+  io.flush()
+end
 
 -- vim: set ts=2 sw=2 et ai si fdm=indent:

@@ -1,4 +1,4 @@
-# secure-link
+# securelink
 
 a mechanism for front-end web applications to provide intuitive and safe links
 into remote web-accessible back-end storage
@@ -197,22 +197,22 @@ configuration directory.
 #### nginx
 
 ```
-wget -P /etc/nginx https://raw.github.com/LucaFilipozzi/secure-link/master/secure-link-common.lua
-wget -P /etc/nginx https://raw.github.com/LucaFilipozzi/secure-link/master/secure-link-nginx.lua
+wget -P /etc/nginx https://raw.github.com/LucaFilipozzi/securelink/master/securelink-common.lua
+wget -P /etc/nginx https://raw.github.com/LucaFilipozzi/securelink/master/securelink-nginx.lua
 ```
 
 #### lighttpd
 
 ```
-wget -P /etc/lighttpd https://raw.github.com/LucaFilipozzi/secure-link/master/secure-link-common.lua
-wget -P /etc/lighttpd https://raw.github.com/LucaFilipozzi/secure-link/master/secure-link-lighttpd.lua
+wget -P /etc/lighttpd https://raw.github.com/LucaFilipozzi/securelink/master/securelink-common.lua
+wget -P /etc/lighttpd https://raw.github.com/LucaFilipozzi/securelink/master/securelink-lighttpd.lua
 ```
 
 #### apache2
 
 ```
-wget -P /etc/apache2 https://raw.github.com/LucaFilipozzi/secure-link/master/secure-link-common.lua
-wget -P /etc/apache2 https://raw.github.com/LucaFilipozzi/secure-link/master/secure-link-apache2.lua
+wget -P /etc/apache2 https://raw.github.com/LucaFilipozzi/securelink/master/securelink-common.lua
+wget -P /etc/apache2 https://raw.github.com/LucaFilipozzi/securelink/master/securelink-apache2.lua
 ```
 
 ### Configuration
@@ -224,11 +224,15 @@ nginx's excellent use of lua as an well-integrated mechanism for extending
 functionality.
 
 ```
-location /foo/ {
-  set $key "secret";
-  set $src "/foo";
-  set $tgt "/bar";
-  rewrite_by_lua_file secure-link-nginx.lua;
+server {
+  ...
+  location /foo/ {
+    set $key "secret";
+    set $src "/foo";
+    set $tgt "/bar";
+    rewrite_by_lua_file securelink-nginx.lua;
+  }
+  ...
 }
 ```
 
@@ -243,11 +247,11 @@ server.modules = {
   ...
   "mod_magnet",
   "mod_setenv",
-  ...}
+  ...}
 
 $HTTP["url"] =~ "^/foo/" {
   setenv.add-environment = ("key" => "secret", "src" => "/foo", "tgt" => "/bar")
-  magnet.attract-physical-path-to = ("/etc/lighttpd/secure-link-lighttpd.lua")
+  magnet.attract-physical-path-to = ("/etc/lighttpd/securelink-lighttpd.lua")
 }
 ```
 
@@ -266,7 +270,7 @@ RewriteLock /var/run/apache2/rewrite.lock
 <VirtualHost ...>
   ...
   RewriteEngine On
-  RewriteMap securelink prg:/etc/apache2/secure-link-apache2.lua
+  RewriteMap securelink prg:/etc/apache2/securelink-apache2.lua
   RewriteRule ^(/foo/.+) ${securelink:secret+/foo+/bar+%{REQUEST_URI}} [C,DPI]
   RewriteRule ^(/bar/[^+]+)+(.+) $1 [L,T=$2]
   ...
@@ -283,4 +287,4 @@ RewriteLock /var/run/apache2/rewrite.lock
 [6]: http://redmine.lighttpd.net/projects/1/wiki/Docs_ModMagnet
 [7]: http://httpd.apache.org/docs/2.2/mod/mod_rewrite.html
 [8]: http://httpd.apache.org/docs/2.2/mod/mod_rewrite.html#rewritemap
-[9]: https://github.com/LucaFilipozzi/secure-link/issues
+[9]: https://github.com/LucaFilipozzi/securelink/issues

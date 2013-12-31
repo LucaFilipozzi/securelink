@@ -18,30 +18,35 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-local common = require("secure-link-common")
+package.path = "/etc/nginx/?.lua;" .. package.path
 
-function get_uri()
-  local _key = lighty.req_env["key"]  -- set in lighttpd configuration (eg: "secret")
-  local _src = lighty.req_env["src"]  -- set in lighttpd configuration (eg: "/foo")
-  local _tgt = lighty.req_env["tgt"]  -- set in lighttpd configuration (eg: "/bar")
-  local _uri = lighty.env["uri.path"] -- set by lighttpd automatically
+local securelink = require("securelink-common")
+
+local function get_uri()
+  local _key = ngx.var.key  -- set in nginx configuration (eg: "secret")
+  local _src = ngx.var.src  -- set in nginx configuration (eg: "/foo")
+  local _tgt = ngx.var.tgt  -- set in nginx configuration (eg: "/bar")
+  local _uri = ngx.var.uri  -- set by nginx automatically
   return _key, _src, _tgt, _uri
 end
 
-function return_status(_status)
-  os.exit(_status)
+local function set_uri(_uri, _ext)
+  ngx.req.set_uri(_uri)
+  ngx.header["Content-Type"] = _ext
 end
 
-function log_error(_error)
-  print(_error)
+local function return_status(_status)
+  ngx.exit(_status)
 end
 
-function set_uri(_uri, _ext)
-  lighty.env["uri.path"] = _uri
-  lighty.header["Content-Type"] = _ext
+local function log_error(_error)
+  ngx.log(ngx.ERR, _error)
 end
+
+securelink.return_status = return_status
+securelink.log_error = log_error
 
 -- get_uri() -> rewrite_uri() -> set_uri()
-set_uri(common.rewrite_uri(get_uri()))
+set_uri(securelink.rewrite_uri(get_uri()))
 
 -- vim: set ts=2 sw=2 et ai si fdm=indent:
